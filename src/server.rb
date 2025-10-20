@@ -163,5 +163,32 @@ listener =
     end
   end
 
-File.write(connection_filepath, JSON.fast_generate(connection_information))
+# Write connection information atomically so readers never see a partial file
+begin
+  json = JSON.fast_generate(connection_information)
+
+  dir = File.dirname(connection_filepath)
+  base = File.basename(connection_filepath)
+  tmp_path = File.join(dir, ".#{base}.tmp-#{Process.pid}")
+
+  # Write to a temp file in the same directory as the final target
+  File.open(tmp_path, "wb") do |f|
+    f.write(json)
+    f.flush
+    # ensure contents are on disk before swap
+    f.fsync
+  end
+
+  # Atomic swap into place via file rename
+  File.rename(tmp_path, connection_filepath)
+rescue Exception => e
+  begin
+    File.unlink(tmp_path) if tmp_path && File.exist?(tmp_path)
+  rescue StandardError
+    # ignore
+  end
+
+  raise e
+end
+
 listener.join
