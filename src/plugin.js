@@ -70,7 +70,7 @@ export async function spawnServer(opts, killOnExit = true) {
 
   const options = {
     env: Object.assign({}, process.env, { LANG: getLang() }),
-    stdio: ["ignore", "inherit", "inherit"],
+    stdio: ["ignore", "ignore", "inherit"],
     detached: true
   };
 
