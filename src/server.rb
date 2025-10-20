@@ -171,15 +171,27 @@ begin
   base = File.basename(connection_filepath)
   tmp_path = File.join(dir, ".#{base}.tmp-#{Process.pid}")
 
+  puts "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+  puts "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+  puts "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+  puts "WRITING TEMP FILE: #{tmp_path}"
+  puts "CONTENT: #{json}"
+  
   # Write to a temp file in the same directory as the final target
   File.open(tmp_path, "wb") do |f|
     f.write(json)
     f.flush
-    f.fsync    # ensure contents are on disk before swap
+    # ensure contents are on disk before swap
+    f.fsync
   end
 
+  puts "SWAPPING IN PLACE #{tmp_path} and #{connection_filepath}"
   # Atomic swap into place (same filesystem)
   File.rename(tmp_path, connection_filepath)
+  puts "DONE WRITING FILE: #{connection_filepath}"
+  puts "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+  puts "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+  puts "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 rescue Exception => e
   # Best-effort cleanup of the temp file
   begin
